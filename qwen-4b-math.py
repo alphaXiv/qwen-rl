@@ -169,89 +169,34 @@ match_numbers = re.compile(
 )
 
 
-def match_format_exactly(completions, **kwargs):
-    scores = []
-    for completion in completions:
-        response = completion[0]["content"]
-        scores.append(3.0 if match_format.search(response) is not None else 0)
-    return scores
-
-
-def match_format_approximately(completions, **kwargs):
-    scores = []
-    for completion in completions:
-        score = 0
-        response = completion[0]["content"]
-        score += 0.5 if response.count(reasoning_end) == 1 else -1.0
-        score += 0.5 if response.count(solution_start) == 1 else -1.0
-        score += 0.5 if response.count(solution_end) == 1 else -1.0
-        scores.append(score)
-    return scores
-
-
-def check_answer(prompts, completions, answer, **kwargs):
-    responses = [completion[0]["content"] for completion in completions]
-    extracted_responses = [
-        (guess.group(1) if (guess := match_format.search(r)) is not None else None)
-        for r in responses
-    ]
-    scores = []
-    for guess, true_answer in zip(extracted_responses, answer):
-        score = 0
-        if guess is None:
-            scores.append(-2.0)
-            continue
-        if guess == true_answer:
-            score += 5.0
-        elif guess.strip() == true_answer.strip():
-            score += 3.5
-        else:
-            try:
-                ratio = float(guess) / float(true_answer)
-                if 0.9 <= ratio <= 1.1:
-                    score += 2.0
-                elif 0.8 <= ratio <= 1.2:
-                    score += 1.5
-                else:
-                    score -= 2.5
-            except Exception:
-                score -= 4.5
-        scores.append(score)
-    return scores
-
-
 PRINTED_TIMES = 0
 PRINT_EVERY_STEPS = 5
 
 
-def check_numbers(prompts, completions, answer, **kwargs):
+def correct(prompts, completions, answer, **kwargs):
     global PRINTED_TIMES
-    question = prompts[0][-1]["content"]
-    responses = [completion[0]["content"] for completion in completions]
-    extracted_responses = [
-        (guess.group(1) if (guess := match_numbers.search(r)) is not None else None)
-        for r in responses
-    ]
-    if PRINTED_TIMES % PRINT_EVERY_STEPS == 0:
-        print(
-            "*" * 20 + f"Question:\n{question}",
-            f"\nAnswer:\n{answer[0]}",
-            f"\nResponse:\n{responses[0]}",
-            f"\nExtracted:\n{extracted_responses[0]}",
-        )
-    PRINTED_TIMES += 1
-
+    responses = [c[0]["content"] for c in completions]
     scores = []
-    for guess, true_answer in zip(extracted_responses, answer):
-        if guess is None:
-            scores.append(-2.5)
+    for response, true_answer in zip(responses, answer):
+        m = match_format.search(response)
+        if m is None:
+            scores.append(0.0)
             continue
         try:
-            true_answer = float(true_answer.strip())
-            guess = float(guess.strip().replace(",", ""))
-            scores.append(3.5 if guess == true_answer else -1.5)
+            scores.append(
+                1.0 if float(m.group(1).strip().replace(",", "")) == float(true_answer.strip()) else 0.0
+            )
         except Exception:
-            scores.append(0)
+            scores.append(0.0)
+
+    if PRINTED_TIMES % PRINT_EVERY_STEPS == 0:
+        print(
+            "*" * 20 + f"Question:\n{prompts[0][-1]['content']}",
+            f"\nAnswer:\n{answer[0]}",
+            f"\nResponse:\n{responses[0]}",
+            f"\nReward:\n{scores[0]}",
+        )
+    PRINTED_TIMES += 1
     return scores
 
 
@@ -300,12 +245,7 @@ training_args = GRPOConfig(
 trainer = GRPOTrainer(
     model=model,
     processing_class=tokenizer,
-    reward_funcs=[
-        match_format_exactly,
-        match_format_approximately,
-        check_answer,
-        check_numbers,
-    ],
+    reward_funcs=[correct],
     args=training_args,
     train_dataset=dataset,
 )
