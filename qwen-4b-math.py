@@ -293,7 +293,7 @@ training_args = GRPOConfig(
     max_completion_length=max_completion_length,
     max_steps=100,
     save_steps=100,
-    report_to="none",
+    report_to="wandb",
     output_dir="outputs",
 )
 
