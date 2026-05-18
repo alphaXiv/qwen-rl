@@ -18,37 +18,13 @@
 import os
 os.environ["UNSLOTH_VLLM_STANDBY"] = "1"
 
-# ===== Pre-unsloth import probe (unsloth intercepts vllm imports and hides errors) =====
-import sys, importlib, traceback
-print("===== IMPORT PROBE =====", flush=True)
-print("python:", sys.version, flush=True)
-for _mod in ("torch", "vllm", "triton", "bitsandbytes", "transformers", "trl"):
-    try:
-        _m = importlib.import_module(_mod)
-        print(f"  {_mod}: {getattr(_m, '__version__', '?')}", flush=True)
-    except Exception as _e:
-        print(f"  {_mod}: IMPORT FAILED — {type(_e).__name__}: {_e}", flush=True)
-print("--- raw vllm import ---", flush=True)
-try:
-    import vllm
-    print("vllm OK:", vllm.__version__, flush=True)
-except Exception:
-    traceback.print_exc()
-print("--- vllm._C extension ---", flush=True)
-try:
-    import vllm._C  # noqa
-    print("vllm._C OK", flush=True)
-except Exception:
-    traceback.print_exc()
-print("===== END IMPORT PROBE =====", flush=True)
-# ===== end probe =====
+from unsloth import FastLanguageModel
 
 import re
 import gc
 import torch
 import numpy as np
 import pandas as pd
-from unsloth import FastLanguageModel
 from datasets import load_dataset, Dataset
 from trl import SFTTrainer, SFTConfig, GRPOConfig, GRPOTrainer
 from vllm import SamplingParams
