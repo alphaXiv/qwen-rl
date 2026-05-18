@@ -17,7 +17,7 @@
 # ]
 # ///
 import os
-os.environ["UNSLOTH_VLLM_STANDBY"] = "1"
+os.environ.setdefault("UNSLOTH_VLLM_STANDBY", "1")
 
 from unsloth import FastLanguageModel
 
@@ -41,7 +41,7 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     load_in_4bit=False,
     fast_inference=True,
     max_lora_rank=lora_rank,
-    gpu_memory_utilization=0.9,
+    gpu_memory_utilization=float(os.environ.get("GPU_MEM_UTIL", 0.9)),
 )
 
 model = FastLanguageModel.get_peft_model(
@@ -287,12 +287,12 @@ training_args = GRPOConfig(
     optim="adamw_8bit",
     logging_steps=1,
     per_device_train_batch_size=1,
-    gradient_accumulation_steps=1,
+    gradient_accumulation_steps=2,
     num_generations=8,
     max_prompt_length=max_prompt_length,
     max_completion_length=max_completion_length,
-    max_steps=100,
-    save_steps=100,
+    max_steps=1000,
+    save_steps=1000,
     report_to="wandb",
     output_dir="outputs",
 )

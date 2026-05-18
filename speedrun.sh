@@ -34,4 +34,21 @@ for i in range(torch.cuda.device_count()):
 PY
 echo "===== END GPU DIAGNOSTICS ====="
 
+GPU_NAME="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -n1 || echo unknown)"
+case "$GPU_NAME" in
+  *H100*|*H200*) ARCH=hopper ;;
+  *A100*)        ARCH=ampere ;;
+  *)             ARCH=unknown ;;
+esac
+echo "Detected GPU: '$GPU_NAME' -> $ARCH"
+
+if [ "$ARCH" = "hopper" ]; then
+  export UNSLOTH_VLLM_STANDBY=0
+  export GPU_MEM_UTIL=0.7
+else
+  export UNSLOTH_VLLM_STANDBY=1
+  export GPU_MEM_UTIL=0.9
+fi
+echo "UNSLOTH_VLLM_STANDBY=$UNSLOTH_VLLM_STANDBY GPU_MEM_UTIL=$GPU_MEM_UTIL"
+
 exec uv run --python 3.11 "$SCRIPT_DIR/qwen-4b-math.py" "$@"
