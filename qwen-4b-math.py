@@ -8,10 +8,10 @@
 #   "datasets",
 #   "pandas",
 #   "numpy",
-#   "torch",
+#   "torch>=2.5",
 #   "torchvision",
+#   "torchaudio",
 #   "bitsandbytes",
-#   "xformers",
 #   "safetensors",
 # ]
 # ///

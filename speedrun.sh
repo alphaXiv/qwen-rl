@@ -37,4 +37,4 @@ for i in range(torch.cuda.device_count()):
 PY
 echo "===== END GPU DIAGNOSTICS ====="
 
-exec uv run --python 3.11 "$SCRIPT_DIR/qwen-4b-math.py" "$@"
+exec uv run --python 3.11 --torch-backend=auto "$SCRIPT_DIR/qwen-4b-math.py" "$@"
