@@ -1,0 +1,7 @@
+.claude/
+outputs/
+grpo_saved_lora/
+__pycache__/
+*.pyc
+.venv/
+wandb/
