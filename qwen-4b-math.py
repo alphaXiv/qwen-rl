@@ -13,6 +13,7 @@
 #   "xformers",
 #   "torchao>=0.16.0",
 #   "safetensors",
+#   "wandb",
 # ]
 # ///
 import os
