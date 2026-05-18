@@ -2,13 +2,13 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #   "unsloth",
-#   "vllm",
+#   "vllm==0.21.0",
 #   "transformers==4.56.2",
 #   "trl==0.22.2",
 #   "datasets",
 #   "pandas",
 #   "numpy",
-#   "torch>=2.5",
+#   "torch==2.11.0",
 #   "torchvision",
 #   "torchaudio",
 #   "bitsandbytes",
