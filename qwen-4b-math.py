@@ -136,7 +136,7 @@ trainer = SFTTrainer(
         weight_decay=0.001,
         lr_scheduler_type="linear",
         seed=3407,
-        report_to="none",
+        report_to="wandb",
     ),
 )
 trainer.train()
